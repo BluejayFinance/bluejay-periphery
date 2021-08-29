@@ -143,7 +143,6 @@ contract Auction is Ownable, ReentrancyGuard {
     isShutdown = true;
   }
 
-  // Dev methods
   function withdraw(uint256 amount, address payable to) public onlyOwner {
     (bool success, ) = to.call{value: amount}("");
     require(success, "Withdraw failed");

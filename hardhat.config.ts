@@ -1,4 +1,4 @@
-import { task } from "hardhat/config";
+import { task, types } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
@@ -17,7 +17,25 @@ task("accounts", "Prints the list of accounts", async (_taskArgs, hre) => {
 
 task("deploy-testnet", "Deploy to the testnet", async (args: any, hre) => {
   await deployTestnet(args, hre);
-});
+})
+  .addParam(
+    "auctionStartBlock",
+    "Block number where Auction starts",
+    undefined,
+    types.int
+  )
+  .addParam(
+    "lmStartBlock",
+    "Block number where Liquidity Mining starts",
+    undefined,
+    types.int
+  )
+  .addParam(
+    "lmBonusEndBlock",
+    "Block number where Liquidity Mining bonus ends",
+    undefined,
+    types.int
+  );
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -30,8 +48,8 @@ export default {
   solidity: "0.8.4",
   settings: {
     optimizer: {
-      enabled: false,
-      runs: 1000,
+      enabled: true,
+      runs: 200,
     },
   },
   networks: config.networks,

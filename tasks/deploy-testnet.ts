@@ -3,13 +3,47 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { getLogger, enableAllLog } from "../src/debug";
 import { exp } from "../test/utils";
 
-const log = getLogger("timelock");
+const log = getLogger("deploy-testnet");
 enableAllLog();
 
-const BLOCK_TIME = 2;
+const BLOCK_TIME = 2; // 2 seconds
+const BLOCK_PER_PERIOD = (24 * 60 * 60) / BLOCK_TIME; // 24 hours
 
 export const deployTestnet = async (
-  _: any,
+  {
+    auctionStartBlock,
+    auctionPrice = exp(24),
+    auctionSensitivity = exp(27).mul(2),
+    auctionBlocksPerPeriod = BLOCK_PER_PERIOD,
+    auctionTokensPerPeriod = exp(18).mul(600),
+    auctionTokenFunded = exp(18).mul(250000),
+    lmStartBlock,
+    lmBonusEndBlock,
+    lmRewardPerBlock = exp(18)
+      .mul(250000)
+      .div(5)
+      .div(365)
+      .div(24)
+      .div(60)
+      .div(60)
+      .mul(BLOCK_TIME),
+    lmBonusMultiplier = 2,
+    lmTokenFunded = exp(18).mul(250000),
+    deployerFunded = exp(18),
+  }: {
+    auctionStartBlock: number;
+    auctionPrice: BigNumber;
+    auctionSensitivity: BigNumber;
+    auctionBlocksPerPeriod: number;
+    auctionTokensPerPeriod: BigNumber;
+    auctionTokenFunded: BigNumber;
+    lmStartBlock: number;
+    lmBonusEndBlock: number;
+    lmRewardPerBlock: BigNumber;
+    lmBonusMultiplier: number;
+    lmTokenFunded: BigNumber;
+    deployerFunded: BigNumber;
+  },
   { ethers }: HardhatRuntimeEnvironment
 ) => {
   const [deployer] = await ethers.getSigners();
@@ -18,42 +52,43 @@ export const deployTestnet = async (
 
   const SimpleToken = await ethers.getContractFactory("SimpleToken");
 
-  // Deploy LP token
-  const lpToken = await SimpleToken.deploy("LP Token", "LPT");
-  await lpToken.deployed();
-  await lpToken.mint(deployer.address, exp(18).mul(1000000));
-  log.info(`LPT deployed at ${lpToken.address}`);
-
   // Deploy governance token
   const bluToken = await SimpleToken.deploy("Bluejay Token", "BLU");
   await bluToken.deployed();
   log.info(`BLU deployed at ${bluToken.address}`);
 
+  await bluToken.mint(deployer.address, deployerFunded);
+  log.info(`Deployer funded`);
+
+  // Deploy Auction contract
+  const Auction = await ethers.getContractFactory("Auction");
+  const auction = await Auction.deploy(
+    bluToken.address,
+    auctionPrice,
+    auctionSensitivity,
+    auctionBlocksPerPeriod,
+    auctionTokensPerPeriod,
+    auctionStartBlock
+  );
+  await auction.deployed();
+  log.info(`Auction deployed at ${auction.address}`);
+
+  await bluToken.mint(auction.address, auctionTokenFunded);
+  log.info(`Auction funded`);
+
   // Deploy Liquidity Mining contract
-  const currentBlockNumber = await ethers.provider.getBlockNumber();
-  const startBlock = BigNumber.from(5)
-    .mul(60)
-    .div(BLOCK_TIME)
-    .add(currentBlockNumber); // 5 minutes later
-  const bonusEndBlock = BigNumber.from(15)
-    .mul(60)
-    .div(BLOCK_TIME)
-    .add(currentBlockNumber); // 15 minutes later
   const LiquidityMining = await ethers.getContractFactory("LiquidityMining");
   const liquidityMining = await LiquidityMining.deploy(
     bluToken.address,
-    exp(16),
-    startBlock,
-    bonusEndBlock,
-    2
+    lmRewardPerBlock,
+    lmStartBlock,
+    lmBonusEndBlock,
+    lmBonusMultiplier
   );
   await liquidityMining.deployed();
   log.info(`LiquidityMining deployed at ${liquidityMining.address}`);
 
-  await liquidityMining.add(60, lpToken.address, true);
-  log.info(`LiquidityMining added pool`);
-
-  await bluToken.mint(liquidityMining.address, exp(18).mul(1000000));
+  await bluToken.mint(liquidityMining.address, lmTokenFunded);
   log.info(`LiquidityMining funded`);
 
   return bluToken.address;
