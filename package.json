@@ -2,7 +2,8 @@
   "name": "bluejay-core",
   "scripts": {
     "lint": "eslint . --ext js,ts,tsx",
-    "test": "hardhat test"
+    "test": "hardhat test",
+    "watch-auction": "nodemon --exec \"hh test test/Auction.test.ts\" -e \"ts sol\""
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
