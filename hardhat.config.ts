@@ -4,7 +4,7 @@ import "@nomiclabs/hardhat-waffle";
 import "@openzeppelin/hardhat-upgrades";
 import "hardhat-watcher";
 import { config } from "./src/config";
-import { deployTestnet } from "./tasks/deploy-testnet";
+import { deploy } from "./tasks/deploy";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -15,8 +15,8 @@ task("accounts", "Prints the list of accounts", async (_taskArgs, hre) => {
   accounts.forEach((account) => console.log(account.address));
 });
 
-task("deploy-testnet", "Deploy to the testnet", async (args: any, hre) => {
-  await deployTestnet(args, hre);
+task("deploy", "Deploy entire infrastructure", async (args: any, hre) => {
+  await deploy(args, hre);
 })
   .addParam(
     "auctionStartBlock",
@@ -33,6 +33,18 @@ task("deploy-testnet", "Deploy to the testnet", async (args: any, hre) => {
   .addParam(
     "lmBonusEndBlock",
     "Block number where Liquidity Mining bonus ends",
+    undefined,
+    types.int
+  )
+  .addOptionalParam(
+    "gasPrice",
+    "Gas price for transaction (in Gwei)",
+    undefined,
+    types.int
+  )
+  .addOptionalParam(
+    "timelockDelay",
+    "Delay for timelock transactions",
     undefined,
     types.int
   );

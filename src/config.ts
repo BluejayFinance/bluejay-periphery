@@ -12,7 +12,7 @@ const generateNetworks = () => {
   return {
     hardhat: {},
     matic: {
-      url: "https://matic-mainnet.chainstacklabs.com",
+      url: `https://polygon-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_KEY}`,
       accounts: [process.env.MATIC_ACCOUNT_1],
       chainId: 137,
     },

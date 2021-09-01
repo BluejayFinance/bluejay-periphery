@@ -17,13 +17,14 @@ const whenAuctionDeployed = async ({
   const currentBlock = await ethers.provider.getBlockNumber();
 
   const Auction = await ethers.getContractFactory("Auction");
-  const auction = await Auction.deploy(
+  const auction = await Auction.deploy();
+  await auction.initialize(
     rewardToken.address,
     initialPrice,
     sensitivity,
     initialBlocksPerPeriod,
     initialTokenPerPeriod,
-    currentBlock + startDelay + 2
+    currentBlock + startDelay + 3
   );
 
   await rewardToken.mint(auction.address, tokensMinted);
@@ -32,6 +33,14 @@ const whenAuctionDeployed = async ({
 };
 
 describe("Auction", () => {
+  describe("initialize", () => {
+    it("should not be allowed to be re-initialized", async () => {
+      const { auction, rewardToken } = await whenAuctionDeployed({});
+      await expect(
+        auction.initialize(rewardToken.address, 0, 2, 2, 2, 0)
+      ).to.revertedWith("Initializable: contract is already initialized");
+    });
+  });
   describe("periodSinceStart", () => {
     it("should revert if auction has not started", async () => {
       const { auction } = await whenAuctionDeployed({});
