@@ -4,6 +4,7 @@
     "lint": "eslint . --ext js,ts,tsx",
     "test": "hardhat test",
     "watch-auction": "nodemon --exec \"hh test test/Auction.test.ts\" -e \"ts sol\"",
+    "watch-liquidityMining": "nodemon --exec \"hh test test/LiquidityMining.test.ts\" -e \"ts sol\"",
     "flatten": "npm-run-all flatten:*",
     "flatten:auction": "hh flatten contracts/Auction.sol > flattenedContract/Auction.flat.sol",
     "flatten:liquidityMining": "hh flatten contracts/LiquidityMining.sol > flattenedContract/LiquidityMining.flat.sol",

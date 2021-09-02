@@ -28,6 +28,7 @@ interface IMigratorChef {
 // - Removed minting of reward token (The reward token must be transferred into the LiquidityMining Contract)
 // - Removed dev rewards
 // - Improved precision from 1e12 to 1e18
+// - Added withdrawReward to allow preminted tokens to be withdrawn during a migration
 
 contract LiquidityMining is Ownable {
   using SafeMath for uint256;
@@ -142,8 +143,8 @@ contract LiquidityMining is Ownable {
     migrator = _migrator;
   }
 
-  // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
-  function migrate(uint256 _pid) public {
+  // Migrate lp token to another lp contract. We trust that migrator contract is good.
+  function migrate(uint256 _pid) public onlyOwner {
     require(address(migrator) != address(0), "migrate: no migrator");
     PoolInfo storage pool = poolInfo[_pid];
     IERC20 lpToken = pool.lpToken;
@@ -276,5 +277,10 @@ contract LiquidityMining is Ownable {
     } else {
       reward.transfer(_to, _amount);
     }
+  }
+
+  // Allow admin to remove REWARD tokens from the contract since they are not minted on the fly.
+  function withdrawReward(uint256 amount) public onlyOwner {
+    safeRewardTransfer(msg.sender, amount);
   }
 }

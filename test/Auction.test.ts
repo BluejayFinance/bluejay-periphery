@@ -1,6 +1,6 @@
 import { BigNumber } from "ethers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { exp, mineBlocks } from "./utils";
 
 const whenAuctionDeployed = async ({
@@ -17,14 +17,19 @@ const whenAuctionDeployed = async ({
   const currentBlock = await ethers.provider.getBlockNumber();
 
   const Auction = await ethers.getContractFactory("Auction");
-  const auction = await Auction.deploy();
-  await auction.initialize(
-    rewardToken.address,
-    initialPrice,
-    sensitivity,
-    initialBlocksPerPeriod,
-    initialTokenPerPeriod,
-    currentBlock + startDelay + 3
+  const auction = await upgrades.deployProxy(
+    Auction,
+    [
+      rewardToken.address,
+      initialPrice,
+      sensitivity,
+      initialBlocksPerPeriod,
+      initialTokenPerPeriod,
+      currentBlock + startDelay + 2,
+    ],
+    {
+      kind: "uups",
+    }
   );
 
   await rewardToken.mint(auction.address, tokensMinted);
@@ -519,6 +524,95 @@ describe("Auction", () => {
       expect(await rewardToken.balanceOf(p1.address)).to.equal(
         "200000000000000000000"
       );
+    });
+  });
+  describe("upgradeTo", () => {
+    it("should be upgradable by owner", async () => {
+      const { auction } = await whenAuctionDeployed({
+        initialPrice: exp(25), // 100 token / wei
+        startDelay: 0,
+        initialBlocksPerPeriod: 10,
+      });
+      const [, user] = await ethers.getSigners();
+      auction.connect(user).buyToken({ value: 10000 });
+      const tokenSold = await auction.totalTokenSold();
+
+      const AuctionSimpleUpgrade = await ethers.getContractFactory(
+        "AuctionSimpleUpgrade"
+      );
+      const auctionUpgradedImpl = await AuctionSimpleUpgrade.deploy();
+      await auctionUpgradedImpl.deployed();
+      await auction.upgradeTo(auctionUpgradedImpl.address);
+      expect(
+        await AuctionSimpleUpgrade.attach(auction.address).version()
+      ).to.equal("v2");
+      expect(await auction.totalTokenSold()).to.equal(tokenSold);
+    });
+    it("should not be upgradable by non-owner", async () => {
+      const [, nonOwner] = await ethers.getSigners();
+      const { auction } = await whenAuctionDeployed({
+        initialPrice: exp(25), // 100 token / wei
+        startDelay: 0,
+        initialBlocksPerPeriod: 10,
+      });
+      const AuctionSimpleUpgrade = await ethers.getContractFactory(
+        "AuctionSimpleUpgrade"
+      );
+      const auctionUpgradedImpl = await AuctionSimpleUpgrade.deploy();
+      await auctionUpgradedImpl.deployed();
+      await expect(
+        auction.connect(nonOwner).upgradeTo(auctionUpgradedImpl.address)
+      ).to.revertedWith("Ownable: caller is not the owner");
+    });
+  });
+  describe("updateSensitivity", () => {
+    it("should allow owner to update the price sensitivity", async () => {
+      const [, p1] = await ethers.getSigners();
+
+      const { auction, rewardToken } = await whenAuctionDeployed({
+        initialPrice: exp(25), // 100 token / wei
+        startDelay: 0,
+        initialBlocksPerPeriod: 5,
+      });
+
+      // Period 0
+      // Price: 0.01
+      // P1: 6 eth > 600 token
+      expect(await auction.currentPrice()).to.equal(exp(25));
+      await auction.connect(p1).buyToken({ value: exp(18).mul(6) });
+      expect(await rewardToken.balanceOf(p1.address)).to.equal(
+        "600000000000000000000"
+      );
+
+      await mineBlocks(4, ethers.provider);
+
+      // Period 1
+      // Price: 0.02
+      // P1: 12 eth > 600 token
+      expect(await auction.currentPrice()).to.equal(exp(25).mul(2));
+      await auction.connect(p1).buyToken({ value: exp(18).mul(12) });
+      expect(await rewardToken.balanceOf(p1.address)).to.equal(
+        "1200000000000000000000"
+      );
+
+      await auction.updateSensitivity(exp(27).mul(15).div(10)); // 1.5x
+      await mineBlocks(3, ethers.provider);
+
+      // Period 2
+      // Price: 0.03
+      expect(await auction.currentPrice()).to.equal(exp(25).mul(3));
+    });
+    it("should not allow non-owner to update the price sensitivity", async () => {
+      const [, notOwner] = await ethers.getSigners();
+
+      const { auction } = await whenAuctionDeployed({
+        initialPrice: exp(25), // 100 token / wei
+        startDelay: 0,
+        initialBlocksPerPeriod: 5,
+      });
+      await expect(
+        auction.connect(notOwner).updateSensitivity(exp(27).mul(15).div(10))
+      ).to.revertedWith("Ownable: caller is not the owner");
     });
   });
 });

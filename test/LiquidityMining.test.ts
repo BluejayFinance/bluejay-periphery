@@ -286,4 +286,40 @@ describe("LiquidityMining", () => {
     // User gets remaining balance of rewards token
     expect(await rewardToken.balanceOf(participant1.address)).to.equal("10000");
   });
+  it("should allow admin to withdraw reward token", async () => {
+    const [deployer] = await ethers.getSigners();
+    const currentBlock = await ethers.provider.getBlockNumber();
+    const { rewardToken, liquidityMining } = await whenLiquidityMiningSetup({
+      rewardPerBlock: DEFAULT_REWARD_PER_BLOCK,
+      rewardToMint: BigNumber.from(10000),
+      bonusMultiplier: 2,
+      bonusEndBlock: currentBlock + 10,
+      startBlock: currentBlock + 10,
+    });
+    const ownerBalanceBefore = await rewardToken.balanceOf(deployer.address);
+    const liquidityMiningBalanceBefore = await rewardToken.balanceOf(
+      liquidityMining.address
+    );
+    await liquidityMining.withdrawReward(liquidityMiningBalanceBefore);
+    const ownerBalanceAfter = await rewardToken.balanceOf(deployer.address);
+
+    expect(ownerBalanceAfter.sub(ownerBalanceBefore)).to.equal(
+      liquidityMiningBalanceBefore
+    );
+  });
+  it("should not allow non-admin to withdraw reward token", async () => {
+    const [, notOwner] = await ethers.getSigners();
+    const currentBlock = await ethers.provider.getBlockNumber();
+    const { liquidityMining } = await whenLiquidityMiningSetup({
+      rewardPerBlock: DEFAULT_REWARD_PER_BLOCK,
+      rewardToMint: BigNumber.from(10000),
+      bonusMultiplier: 2,
+      bonusEndBlock: currentBlock + 10,
+      startBlock: currentBlock + 10,
+    });
+
+    await expect(
+      liquidityMining.connect(notOwner).withdrawReward(1)
+    ).to.revertedWith("Ownable: caller is not the owner");
+  });
 });

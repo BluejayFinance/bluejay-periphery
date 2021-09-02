@@ -58,6 +58,8 @@ contract Auction is
   ) public initializer {
     __Ownable_init();
     __ReentrancyGuard_init();
+    __UUPSUpgradeable_init();
+
     require(initialSensitivity > ONE, "Sensitivity <= 1");
     token = IERC20Upgradeable(initialToken);
     blocksPerPeriod = initialBlocksPerPeriod;
