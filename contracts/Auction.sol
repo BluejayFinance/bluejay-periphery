@@ -5,11 +5,13 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 contract Auction is
   Initializable,
   OwnableUpgradeable,
-  ReentrancyGuardUpgradeable
+  ReentrancyGuardUpgradeable,
+  UUPSUpgradeable
 {
   uint256 constant ONE = 10**27; // [ray]
   uint256 constant LOWER_BOUND = 10**4;
@@ -166,6 +168,11 @@ contract Auction is
   }
 
   // Admin methods
+  function updateSensitivity(uint256 newSensitivity) public onlyOwner {
+    require(newSensitivity > ONE, "Sensitivity <= 1");
+    sensitivity = newSensitivity;
+  }
+
   function updatePriceManually(uint256 updatedPrice) public onlyOwner {
     lastPrice = updatedPrice;
     lastTokenSoldInPeriod = 0;
@@ -180,4 +187,11 @@ contract Auction is
     (bool success, ) = to.call{value: amount}("");
     require(success, "Withdraw failed");
   }
+
+  // Upgradeable
+  function _authorizeUpgrade(address newImplementation)
+    internal
+    override
+    onlyOwner
+  {}
 }

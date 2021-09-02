@@ -8,7 +8,8 @@
     "flatten:auction": "hh flatten contracts/Auction.sol > flattenedContract/Auction.flat.sol",
     "flatten:liquidityMining": "hh flatten contracts/LiquidityMining.sol > flattenedContract/LiquidityMining.flat.sol",
     "flatten:simpleToken": "hh flatten contracts/test/SimpleToken.sol > flattenedContract/SimpleToken.flat.sol",
-    "flatten:timelock": "hh flatten contracts/library/TimelockController.sol > flattenedContract/TimelockController.flat.sol"
+    "flatten:timelock": "hh flatten contracts/library/TimelockController.sol > flattenedContract/TimelockController.flat.sol",
+    "flatten:governanceToken": "hh flatten contracts/GovernanceToken.sol > flattenedContract/GovernanceToken.flat.sol"
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.2",
