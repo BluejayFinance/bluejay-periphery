@@ -177,7 +177,6 @@ contract Auction is
 
   function updatePriceManually(uint256 updatedPrice) public onlyOwner {
     lastPrice = updatedPrice;
-    lastTokenSoldInPeriod = 0;
     lastTransactedPeriod = periodSinceStart();
   }
 

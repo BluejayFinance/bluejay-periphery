@@ -38,6 +38,8 @@ export const deployUups = async ({
   log.info(`Waiting to be mined: ${implementation.deployTransaction.hash}`);
   await implementation.deployed();
   log.info(`Deployed ${name} implementation: ${implementation.address}`);
+  if (initializer) await implementation[initializer](...initializerArgs);
+  log.info(`Initialized ${name}`);
   const initilizeData = initializer
     ? getInitializerData(
         implementationContractFactory,

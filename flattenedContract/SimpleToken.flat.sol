@@ -1,8 +1,6 @@
-// Sources flattened with hardhat v2.6.0 https://hardhat.org
+// SPDX-License-Identifier: MIT
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.2.0
-
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -87,8 +85,6 @@ interface IERC20 {
 
 // File @openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol@v4.2.0
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 /**
@@ -116,8 +112,6 @@ interface IERC20Metadata is IERC20 {
 
 // File @openzeppelin/contracts/utils/Context.sol@v4.2.0
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 /*
@@ -142,8 +136,6 @@ abstract contract Context {
 
 
 // File @openzeppelin/contracts/token/ERC20/ERC20.sol@v4.2.0
-
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -499,8 +491,6 @@ contract ERC20 is Context, IERC20, IERC20Metadata {
 
 // File @openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol@v4.2.0
 
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
 
@@ -542,8 +532,6 @@ abstract contract ERC20Burnable is Context, ERC20 {
 
 
 // File @openzeppelin/contracts/access/Ownable.sol@v4.2.0
-
-// SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
 
@@ -615,8 +603,6 @@ abstract contract Ownable is Context {
 
 
 // File contracts/test/SimpleToken.sol
-
-// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
 
 
