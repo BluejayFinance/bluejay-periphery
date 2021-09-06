@@ -11,11 +11,13 @@ enableAllLog();
 const BLOCK_TIME = 2; // 2 seconds
 const BLOCK_PER_PERIOD = (24 * 60 * 60) / BLOCK_TIME; // 24 hours
 
+// 2000000000000000000000000000
+
 // Deploys the full infrastructure for the governance token
 export const deploy = async (
   {
     auctionStartBlock,
-    auctionPrice = exp(24),
+    auctionPrice,
     auctionSensitivity = exp(27).mul(2),
     auctionBlocksPerPeriod = BLOCK_PER_PERIOD,
     auctionTokensPerPeriod = exp(18).mul(600),
@@ -36,7 +38,7 @@ export const deploy = async (
     timelockDelay = 24 * 60 * 60, // 24 hours
   }: {
     auctionStartBlock: number;
-    auctionPrice: BigNumber;
+    auctionPrice: number;
     auctionSensitivity: BigNumber;
     auctionBlocksPerPeriod: number;
     auctionTokensPerPeriod: BigNumber;
@@ -81,6 +83,7 @@ export const deploy = async (
 
   // Deploy Auction token contract
   const Auction = await ethers.getContractFactory("Auction");
+  const auctionPriceBn = exp(27).mul(auctionPrice);
   const { contract: auction } = await deployUups({
     name: "Auction",
     hre,
@@ -89,7 +92,7 @@ export const deploy = async (
     deploymentOption: { gasPrice },
     initializerArgs: [
       governanceToken.address,
-      auctionPrice,
+      auctionPriceBn,
       auctionSensitivity,
       auctionBlocksPerPeriod,
       auctionTokensPerPeriod,
@@ -126,8 +129,8 @@ export const deploy = async (
   await timelock.deployed();
   log.info(`TimelockController deployed at ${timelock.address}`);
 
-  // Transfer remaining governance token to timelock, leaving 1 with deployer to setup swap pool
-  await governanceToken.transfer(liquidityMining.address, exp(18).mul(499999));
+  // Transfer remaining governance token to timelock, leaving 11 with deployer to setup swap pool
+  await governanceToken.transfer(liquidityMining.address, exp(18).mul(499989));
 
   // Transfer control of governance token to timelock
   await governanceToken.grantRole(constants.HashZero, timelock.address);

@@ -5,6 +5,7 @@ import "@openzeppelin/hardhat-upgrades";
 import "hardhat-watcher";
 import { config } from "./src/config";
 import { deploy } from "./tasks/deploy";
+import { deployTestUpgrades } from "./tasks/deployTestUpgrades";
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -21,6 +22,12 @@ task("deploy", "Deploy entire infrastructure", async (args: any, hre) => {
   .addParam(
     "auctionStartBlock",
     "Block number where Auction starts",
+    undefined,
+    types.int
+  )
+  .addParam(
+    "auctionPrice",
+    "Price of token in (MATIC/ETH)",
     undefined,
     types.int
   )
@@ -44,10 +51,18 @@ task("deploy", "Deploy entire infrastructure", async (args: any, hre) => {
   )
   .addOptionalParam(
     "timelockDelay",
-    "Delay for timelock transactions",
+    "Delay for timelock transactions (in seconds)",
     undefined,
     types.int
   );
+
+task(
+  "deployTestUpgrades",
+  "Deploy sample upgrades for testing",
+  async (args: any, hre) => {
+    await deployTestUpgrades(args, hre);
+  }
+);
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
