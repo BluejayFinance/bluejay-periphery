@@ -42,7 +42,22 @@
 
 ## Deployment
 
-To deploy to mumbai:
+Matic Staging Deployment:
+
 ```sh
-hh deploy --auction-start-block 18375800 --lm-start-block 18375800 --lm-bonus-end-block 18376800 --gas-price 2 --timelock-delay 60 --network mumbai
+hh deploy --auction-start-block 18795000 --auction-price 50 --lm-start-block 18800000 --lm-bonus-end-block 18900000 --timelock-delay 600 --gas-price 4 --network matic
 ```
+
+Matic Production Deployment:
+
+```sh
+hh deploy --auction-start-block 18950000 --auction-price 50 --lm-start-block 19202000 --lm-bonus-end-block 19454000 --timelock-delay 172800 --gas-price 5 --network matic
+```
+
+## Validate Live Deployment
+
+```sh
+hh validateDeployment --governance-implementation-addr 0xCcFcb319b286D912E63f8fb736067848a444c57a --governance-proxy-addr 0xc6B30dFA547c9f5403B7feD44FC45cD309E76DDe --auction-implementation-addr 0x3FBb7c37Af8D19df00f89CdfBedF04E9F8143386 --auction-proxy-addr 0xcA3b9181aA4e2BaE51871a75644b6c955b982655 --liquidity-mining-addr 0xDA57C5162b3272D8BC1453919FCF460e6465A5b4 --timelock-addr 0x373Fa3D6D05ea357a1320adE5dD2B175D49074cD --deployer-addr 0x29e7Ec68D5E99494839C5aff88D3B0BaBc00fe00 --network matic
+```
+
+[See Deployment Report](./deployment/phase-1/Validation.md)

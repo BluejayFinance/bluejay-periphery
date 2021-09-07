@@ -130,7 +130,7 @@ export const deploy = async (
   log.info(`TimelockController deployed at ${timelock.address}`);
 
   // Transfer remaining governance token to timelock, leaving 11 with deployer to setup swap pool
-  await governanceToken.transfer(liquidityMining.address, exp(18).mul(499989));
+  await governanceToken.transfer(timelock.address, exp(18).mul(499989));
 
   // Transfer control of governance token to timelock
   await governanceToken.grantRole(constants.HashZero, timelock.address);
